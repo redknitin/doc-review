@@ -15,6 +15,25 @@
 //     return view('welcome');
 // });
 
-Route::get('/', 'ReviewController@index');
-Route::get('doc/{id}', 'ReviewController@show');
-Route::post('submit_review/{id}', 'ReviewController@update');
+Route::get('/', [
+    'middleware' => 'auth',
+    'uses' => 'ReviewController@index'
+]);
+Route::get('doc/{id}', [
+    'middleware' => 'auth',
+    'uses' => 'ReviewController@show'
+]);
+Route::post('submit_review/{id}', [
+    'middleware' => 'auth',
+    'uses' => 'ReviewController@update'
+]);
+
+
+// Authentication routes...
+Route::get('auth/login', 'Auth\AuthController@getLogin');
+Route::post('auth/login', 'Auth\AuthController@postLogin');
+Route::get('auth/logout', 'Auth\AuthController@getLogout');
+
+// Registration routes...
+Route::get('auth/register', 'Auth\AuthController@getRegister');
+Route::post('auth/register', 'Auth\AuthController@postRegister');
