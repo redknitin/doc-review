@@ -127,9 +127,28 @@ class ReviewController extends Controller
     public function update(Request $request, $id)
     {
         $entity = \App\Document::find($id);
+		
         if ($request->get('op_type')=='state_change') {
-            $entity->state=$request->get('new_state');
+            $new_state = $request->get('new_state');
+			
+			$entity->state=$new_state;
             $entity->save();
+			
+			global $state_machine;
+
+			if (isset($state_machine['material-request']['callbacks'])) {
+				$callbacks = $state_machine['material-request']['callbacks'];
+				if (isset($callbacks['after'])) {
+					$after_callbacks = $callbacks['after'];
+					if (isset($after_callbacks[$new_state])) {
+						$specific_after_callbacks = $after_callbacks[$new_state];
+						if (isset($specific_after_callbacks['do'])) {
+							$do_specific_after_callbacks = $specific_after_callbacks['do'];
+							$do_specific_after_callbacks($entity);
+						}
+					}
+				}
+			}
         }
         return Redirect('/');
     }
