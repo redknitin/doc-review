@@ -6,7 +6,7 @@
 	Documents Awaiting Review
 </h1>
 
-<table border="1" cellpadding="5">
+<table class="table table-striped">
 	<tr>
 		<th>ID</th>
 		<th>Description</th>
