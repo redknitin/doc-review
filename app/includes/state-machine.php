@@ -17,14 +17,14 @@ $state_machine = [
 				'site-manager-approval-for-budgeted-material-purchase' => [
 					'to' => 'approved-by-site-manager',
 					'from' => ['submitted-for-review'],
-					'roles' => ['site-manager'],
+					'users' => ['sman@mab.ae', 'nospam@mab.ae'],
 					'conditions' => [
 					],
 				],
 				'operation-manager-approval-for-budgeted-material-purchase' => [
 					'to' => 'approved-by-operation-manager',
 					'from' => ['approved-by-site-manager'],
-					'roles' => ['operation-manager'],
+					'users' => ['oman@mab.ae'],
 					'conditions' => [
 						function ($entity) { return $entity->amount <= 10; },
 					],
@@ -32,16 +32,15 @@ $state_machine = [
 				'general-manager-approval-for-budgeted-material-purchase' => [
 					'to' => 'approved-by-general-manager',
 					'from' => ['approved-by-site-manager'],
-					'roles' => ['general-manager'],
+					'users' => ['gman@mab.ae'],
 					'conditions' => [
-	//GM should be able to approve lower amounts too
-	//					'$amount > 100000'
+						//GM should be able to approve lower amounts too - not only $amount > 100000
 					],
 				],
 				'procurement-manager-approval-for-budgeted-material-purchase' => [
 					'to' => 'approved-by-procurement-manager',
 					'from' => ['approved-by-operation-manager', 'approved-by-general-manager'],
-					'roles' => ['procurement-manager'],
+					'users' => ['pman@mab.ae'],
 					'conditions' => [
 					],
 				],
@@ -49,14 +48,13 @@ $state_machine = [
 			'callbacks' => [
 				'after' => [
 					'approved-by-procurement-manager' => [
-						//TODO: Apply filter for from state
-						//'from' => [''],
 						'do' => function($entity) { $entity->state='release-to-system'; $entity->save(); },
 					],
 				],
 			],
 		], //end material request flow
+		
 	'purchase-order' => 
 		[
-		]
+		], //end purchase order flow
 ];
