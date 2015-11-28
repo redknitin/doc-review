@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -97,6 +96,10 @@ class ReviewController extends Controller
                     }
                 }
 
+                if (!in_array(\Auth::user()->email, $itertrans['users'])) {
+					$possible_trans = false;
+				}
+
                 if ($possible_trans) {
                     $states_to_transition[] = $itertrans['to'];
                 }
@@ -150,6 +153,7 @@ class ReviewController extends Controller
 				}
 			}
         }
+		
         return Redirect('/');
     }
 
