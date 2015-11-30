@@ -208,4 +208,10 @@ return [
         'ModelItem'            => SleepingOwl\Admin\Models\ModelItem::class,
     ],
 
+	'AmqpConnection' => [
+		'ip' => '127.0.01',
+		'port' => 5672,
+		'user' => 'root',
+		'pass' => 'kodibuntu',
+	],
 ];
