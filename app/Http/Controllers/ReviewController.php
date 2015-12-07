@@ -17,24 +17,6 @@ class ReviewController extends Controller
      */
     public function index()
     {
-        // $arr = [];
-        
-        // $obj_mock1 = new \stdClass();
-        // $obj_mock1->id = 1;
-        // $obj_mock1->description = 'Chlorine based cleaner';
-        // $obj_mock1->amount = 14.25;
-        // $obj_mock1->ref_id='10012';
-
-        // $arr[] = $obj_mock1;
-        
-        // $obj_mock2 = new \stdClass();
-        // $obj_mock2->id = 2;
-        // $obj_mock2->description = 'Electrical wire';
-        // $obj_mock2->amount = 8.25;
-        // $obj_mock2->ref_id='10013';
-
-        // $arr[] = $obj_mock2;
-
         $arr = \App\Document::all();
 
         return view('review.index')->withListing($arr);
@@ -70,41 +52,10 @@ class ReviewController extends Controller
     public function show($id)
     {
         $entity = \App\Document::find($id);
+		$wi = new \WorkflowInstance('material-request', $entity->id, $entity->state, $entity);
 
         $states_to_transition = [];
-
-        global $state_machine;
-
-        foreach($state_machine['material-request']['transitions'] as $transkey=>$itertrans) {
-            $possible_trans = false;
-            foreach($itertrans['from'] as $iter_from_state) {
-                if ($iter_from_state==$entity->state) {
-                    $possible_trans = true;
-                    break;
-                }
-            }
-
-            if (!$possible_trans) {
-                continue;
-            }
-            else 
-            {
-                foreach ($itertrans['conditions'] as $trialbyfire) {
-                    if (!$trialbyfire($entity)) {
-                        $possible_trans = false;
-                        continue;
-                    }
-                }
-
-                if (!in_array(\Auth::user()->email, $itertrans['users'])) {
-					$possible_trans = false;
-				}
-
-                if ($possible_trans) {
-                    $states_to_transition[] = $itertrans['to'];
-                }
-            }
-        }
+		$states_to_transition = $wi->getTransitionStates(\Auth::user()->email);
 
         return view('review.show')->withEntity($entity)->withTransitionStates($states_to_transition);
     }
@@ -130,29 +81,15 @@ class ReviewController extends Controller
     public function update(Request $request, $id)
     {
         $entity = \App\Document::find($id);
+		$wi = new \WorkflowInstance('material-request', $entity->id, $entity->state, $entity);
 		
         if ($request->get('op_type')=='state_change') {
             $new_state = $request->get('new_state');
 			
+			$wi->setState($new_state);
 			$entity->state=$new_state;
             $entity->save();
-			
-			global $state_machine;
-
-			if (isset($state_machine['material-request']['callbacks'])) {
-				$callbacks = $state_machine['material-request']['callbacks'];
-				if (isset($callbacks['after'])) {
-					$after_callbacks = $callbacks['after'];
-					if (isset($after_callbacks[$new_state])) {
-						$specific_after_callbacks = $after_callbacks[$new_state];
-						if (isset($specific_after_callbacks['do'])) {
-							$do_specific_after_callbacks = $specific_after_callbacks['do'];
-							$do_specific_after_callbacks($entity);
-						}
-					}
-				}
-			}
-        }
+        } // end if op_type is state_change
 		
         return Redirect('/');
     }
